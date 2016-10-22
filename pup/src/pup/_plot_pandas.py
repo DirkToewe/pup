@@ -4,22 +4,42 @@ Created on Oct 15, 2016
 @author: Dirk Toewe
 '''
 from base64 import b64encode
-import io, json
+import io, json, logging, numpy as np, os, uuid, webbrowser
+from json.encoder import JSONEncoder
+from tempfile import NamedTemporaryFile
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from numpy import issubdtype
+from pandas import Series, Index, DataFrame
 from pkg_resources import resource_string
+from plotly.offline.offline import get_plotlyjs
 
 import plotly.graph_objs as go
-import uuid
-from tempfile import NamedTemporaryFile
-import logging
-from plotly.offline.offline import get_plotlyjs
-import webbrowser
-import os
+
 
 _plot_DataFrame_div_template  = resource_string(__name__,"plot_DataFrame_div.template" ).decode('utf8')
 _plot_DataFrame_file_template = resource_string(__name__,"plot_DataFrame_file.template").decode('utf8')
 jszip_min_js = resource_string(__name__,'jszip.min.js').decode('utf8')
+
+class _DataFrameJSONEncoder(JSONEncoder):
+ 
+  def default(self, obj):
+    if isinstance(obj,DataFrame): 
+      return {
+        'columns': obj.columns,
+        'index': obj.index,
+        'data': { k:v for k,v in obj.items() }
+      }
+    if isinstance(obj,Index):
+      obj = obj.to_series()
+    if isinstance(obj,Series):
+      return (
+        [ int(i) for i in obj ]
+        if issubdtype( obj.dtype, np.integer ) else      
+        list(obj)
+      )
+    JSONEncoder.default(self, obj)
+_DataFrameJSONEncoder = _DataFrameJSONEncoder()
 
 def plot_DataFrame_html( dataFrame, layout={}, config=None, zipped=True, validate=True ):
 
@@ -45,12 +65,9 @@ def plot_DataFrame_html( dataFrame, layout={}, config=None, zipped=True, validat
   scene['yaxis']['title'] = 'y'
   scene['zaxis']['title'] = 'z'
 
-  jData = { k:list(v) for k,v in dataFrame.iteritems() }
-  jData = json.dumps(jData)
   jLayout = json.dumps(layout)
   jConfig = json.dumps(config)
-  jColumns= json.dumps( list(dataFrame.columns) )
-  jIndex  = json.dumps( list(dataFrame.index) )
+  jDataFrame = _DataFrameJSONEncoder.encode(dataFrame)
 
   def with_units(x):
     try:
@@ -68,9 +85,7 @@ def plot_DataFrame_html( dataFrame, layout={}, config=None, zipped=True, validat
 
   zDataFrame = io.BytesIO()
   with ZipFile(zDataFrame,'w',compression=ZIP_DEFLATED) as zipFile:
-    zipFile.writestr('/data.json', jData)
-    zipFile.writestr('/index.json', jIndex)
-    zipFile.writestr('/columns.json', jColumns)
+    zipFile.writestr('/dataFrame.json', jDataFrame)
   zDataFrame = b64encode( zDataFrame.getvalue() ).decode('utf-8')
   div = _plot_DataFrame_div_template.format( **locals() )
 

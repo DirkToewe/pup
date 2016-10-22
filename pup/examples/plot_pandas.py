@@ -5,14 +5,13 @@ Created on Oct 15, 2016
 '''
 
 from pandas import read_csv
-from pup._plot_pandas import plot_DataFrame_html, plot_DataFrame_file
-import plotly.graph_objs as go
-from pandas.core.frame import DataFrame
+from pup._plot_pandas import plot_DataFrame_file
 
 dataFrame = read_csv('frankfurt_weather.csv', delimiter=';', skipinitialspace=True)
-dataFrame = dataFrame[ dataFrame['MESS_DATUM'] >= 20140101 ]
-dataFrame = dataFrame[ dataFrame['MESS_DATUM'] <= 20141231 ]
-# print(dataFrame)
+del dataFrame['eor']
+# dataFrame = dataFrame[ dataFrame['MESS_DATUM'] >= 20140101 ]
+# dataFrame = dataFrame[ dataFrame['MESS_DATUM'] <= 20141231 ]
+# print(dataFrame['BEDECKUNGSGRAD'])
 
 print(
   plot_DataFrame_file(

@@ -36,91 +36,124 @@
   window.PLOTLYENV=window.PLOTLYENV || {{}};
   window.PLOTLYENV.BASE_URL="' + plotly_platform_url + '";
 
-  new JSZip()
-    .loadAsync( "{zDataFrame}", {{"base64": true}} )
-    .then( zip => zip.file("/data.json").async("string") )
-    .then(JSON.parse)
-    .then( dataFrame => {{
+  /* In order to reduce the file size, the DataFrame is stored as JSON-file
+   * in a base64-encoded zip-archive. JSZip is used to extract it.
+   */
+  dataFrame = new JSZip().loadAsync( "{zDataFrame}", {{"base64": true}} )
+    .then( zip => zip.file("/dataFrame.json").async("string") )
+    .then( dataFrame => eval('('+dataFrame+')') );
+  dataFrame.then( dataFrame => {{
 
-       var scatter3d = {{
-         x: [], y: [], z: [],
-         mode: 'markers',
-         marker: {{
-           size: 2,
-           colorbar: {{
-             title: '???',
-             titleside: 'top'
-           }},
-           autocolorscale: true,
-           showscale: true,
-           cauto: true
-         }},
-         type: 'scatter3d'
-       }};
-       var layout = {jLayout};
+    var
+      {{ data, columns, index }} = dataFrame,
+      layout = {jLayout},
+      scatter3d = {{
+        x: [], y: [], z: [],
+        mode: 'markers',
+        marker: {{
+          size: 2,
+          colorbar: {{
+            title: '???',
+            titleside: 'top'
+          }},
+          autocolorscale: true,
+          showscale: true,
+          cauto: true
+        }},
+        type: 'scatter3d'
+      }};
 
-       Plotly.newPlot("{div_id}/graph", [scatter3d], layout, {jConfig}).then(
-         plot => {{
-           var
-             keys = Object.keys(dataFrame),
-             xAxis = document.getElementById('{div_id}/x'),
-             yAxis = document.getElementById('{div_id}/y'),
-             zAxis = document.getElementById('{div_id}/z'),
-             color_by_data = document.getElementById('{div_id}/color_by_data'),
-             color_uniform = document.getElementById('{div_id}/color_uniform'),
-             color_data    = document.getElementById('{div_id}/color_data'),
-             color_value   = document.getElementById('{div_id}/color_value');
+    Plotly.newPlot("{div_id}/graph", [scatter3d], layout, {jConfig}).then(
+      plot => {{
 
-           function update_plot(event)
-           {{
-             if( color_by_data.checked )
-             {{
-               color_data .style.display='block';
-               color_value.style.display='none';
-               scatter3d.marker.color = dataFrame[color_data.value];
-               scatter3d.marker.colorbar.title = color_data.value;
-               scatter3d.marker.showscale = true;
-             }} else {{
-               color_data .style.display='none';
-               color_value.style.display='block';
-               scatter3d.marker.color = color_value.value;
-               scatter3d.marker.showscale = false;
-             }}
-             layout.scene.xaxis.title = `x: ${{xAxis.value}}`;
-             layout.scene.yaxis.title = `y: ${{yAxis.value}}`;
-             layout.scene.zaxis.title = `z: ${{zAxis.value}}`;
-             scatter3d.x = dataFrame[xAxis.value];
-             scatter3d.y = dataFrame[yAxis.value];
-             scatter3d.z = dataFrame[zAxis.value];
-             Plotly.redraw(plot);
-           }}
-      
-           color_by_data.checked = false;
-           color_uniform.checked = true;
-           keys.sort();
-           [xAxis,yAxis,zAxis,color_data].forEach(
-             axis => keys.forEach(
-               key => {{
-                 var opt = document.createElement("option");
-                 opt.value = key;
-                 opt.text = key;
-                 axis.add(opt);
-               }}
-             )
-           );
-           color_data.value = keys[2];
-           xAxis.value = keys[0];
-           yAxis.value = keys[1];
-           zAxis.value = keys[keys.length-1];
-           update_plot(null);
+        var
+          xAxis = document.getElementById('{div_id}/x'),
+          yAxis = document.getElementById('{div_id}/y'),
+          zAxis = document.getElementById('{div_id}/z'),
+          color_by_data = document.getElementById('{div_id}/color_by_data'),
+          color_uniform = document.getElementById('{div_id}/color_uniform'),
+          color_data    = document.getElementById('{div_id}/color_data'),
+          color_value   = document.getElementById('{div_id}/color_value');
 
-           color_by_data.addEventListener("click",  update_plot);
-           color_uniform.addEventListener("click",  update_plot);
-           [xAxis,yAxis,zAxis,color_data,color_value].forEach(
-             input => input.addEventListener("change",update_plot)
-           );
-         }}
-       );
-     }});
+        /* Called whenever the plotted data is changed, e.g. via the UI-elements.
+         */
+        function update_plot(event)
+        {{
+          if( color_by_data.checked )
+          {{
+            color_data .style.display='block';
+            color_value.style.display='none';
+            scatter3d.marker.color = data[color_data.value];
+            scatter3d.marker.colorbar.title = color_data.value;
+            scatter3d.marker.showscale = true;
+          }} else {{
+            color_data .style.display='none';
+            color_value.style.display='block';
+            scatter3d.marker.color = color_value.value;
+            scatter3d.marker.showscale = false;
+          }}
+
+          layout.scene.xaxis.title = `x: ${{xAxis.value}}`;
+          layout.scene.yaxis.title = `y: ${{yAxis.value}}`;
+          layout.scene.zaxis.title = `z: ${{zAxis.value}}`;
+
+          scatter3d.x = data[xAxis.value];
+          scatter3d.y = data[yAxis.value];
+          scatter3d.z = data[zAxis.value];
+
+          delete plot.layout.scene.xaxis.type;
+          delete plot.layout.scene.yaxis.type;
+          delete plot.layout.scene.zaxis.type;
+
+          Plotly.redraw(plot);
+        }}
+    
+        color_by_data.checked = false;
+        color_uniform.checked = true;
+
+        [xAxis,yAxis,zAxis,color_data].forEach(
+          axis => columns.forEach(
+            column => {{
+              var opt = document.createElement("option");
+              opt.value = column;
+              opt.text  = column;
+              axis.add(opt);
+            }}
+          )
+        );
+
+        color_data.value = columns[2];
+        xAxis.value = columns[0];
+        yAxis.value = columns[1];
+        zAxis.value = columns[columns.length-1];
+        update_plot(null);
+
+        color_by_data.addEventListener("click",  update_plot);
+        color_uniform.addEventListener("click",  update_plot);
+        [xAxis,yAxis,zAxis,color_data,color_value].forEach(
+          input => input.addEventListener("change",update_plot)
+        );
+
+        /* Lazily load the text for the scatter plot's points.
+         */
+        new Promise( resolve => {{
+          var
+            row = new Array(columns.length+1),
+            txt = new Array(index.length);
+          index.forEach( (idx,iRow) => {{
+            row[0] = `DataFrame idx: ${{idx}}`;
+            columns.forEach( (col,iCol) =>
+              row[iCol+1] = `${{col}}: ${{data[col][iRow]}}`
+            );
+            txt[iRow] = row.join('<br>');
+          }});
+          resolve(txt);
+        }}).then( txt => {{
+          scatter3d.text = txt;
+          Plotly.redraw(plot);
+        }});
+      }}
+    );
+  }});
 }}
 </script>
