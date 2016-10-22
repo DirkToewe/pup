@@ -1,0 +1,126 @@
+<div style="z-index:1; position:absolute; background-color:transparent;">
+  <table border="0">
+    <tr>
+      <td>
+        <table border="0">
+          <tr>
+            <td>x:</td> <td> <select id="{div_id}/x"></select> </td>
+          </tr>
+          <tr>
+            <td>y:</td> <td> <select id="{div_id}/y"></select> </td>
+          </tr>
+          <tr>
+            <td>z:</td> <td> <select id="{div_id}/z"></select> </td>
+          </tr>
+        </table>
+      </td>
+      <td>
+        color:
+        <fieldset>
+          <input  id="{div_id}/color_by_data" type="radio" name="color_method">
+          <label for="{div_id}/color_by_data"> By Data</label><br>
+          <input  id="{div_id}/color_uniform" type="radio" name="color_method">
+          <label for="{div_id}/color_uniform"> Uniform</label><br>
+          <input  id="{div_id}/color_value" type="color" value="#0000ff">
+          <select id="{div_id}/color_data"></select>
+        </fieldset>
+      </td>
+    </tr>
+  </table>
+</div>
+<div id="{div_id}/graph" class="plotly-graph-div" style="width: {width}; height: {height}; z-index:0;">
+</div>
+<script type="text/javascript">
+{{
+  'use strict';
+  window.PLOTLYENV=window.PLOTLYENV || {{}};
+  window.PLOTLYENV.BASE_URL="' + plotly_platform_url + '";
+
+  new JSZip()
+    .loadAsync( "{zDataFrame}", {{"base64": true}} )
+    .then( zip => zip.file("/data.json").async("string") )
+    .then(JSON.parse)
+    .then( dataFrame => {{
+
+       var scatter3d = {{
+         x: [], y: [], z: [],
+         mode: 'markers',
+         marker: {{
+           size: 2,
+           colorbar: {{
+             title: '???',
+             titleside: 'top'
+           }},
+           autocolorscale: true,
+           showscale: true,
+           cauto: true
+         }},
+         type: 'scatter3d'
+       }};
+       var layout = {jLayout};
+
+       Plotly.newPlot("{div_id}/graph", [scatter3d], layout, {jConfig}).then(
+         plot => {{
+           var
+             keys = Object.keys(dataFrame),
+             xAxis = document.getElementById('{div_id}/x'),
+             yAxis = document.getElementById('{div_id}/y'),
+             zAxis = document.getElementById('{div_id}/z'),
+             color_by_data = document.getElementById('{div_id}/color_by_data'),
+             color_uniform = document.getElementById('{div_id}/color_uniform'),
+             color_data    = document.getElementById('{div_id}/color_data'),
+             color_value   = document.getElementById('{div_id}/color_value');
+
+           function update_plot(event)
+           {{
+             if( color_by_data.checked )
+             {{
+               color_data .style.display='block';
+               color_value.style.display='none';
+               scatter3d.marker.color = dataFrame[color_data.value];
+               scatter3d.marker.colorbar.title = color_data.value;
+               scatter3d.marker.showscale = true;
+             }} else {{
+               color_data .style.display='none';
+               color_value.style.display='block';
+               scatter3d.marker.color = color_value.value;
+               scatter3d.marker.showscale = false;
+             }}
+             layout.scene.xaxis.title = `x: ${{xAxis.value}}`;
+             layout.scene.yaxis.title = `y: ${{yAxis.value}}`;
+             layout.scene.zaxis.title = `z: ${{zAxis.value}}`;
+             scatter3d.x = dataFrame[xAxis.value];
+             scatter3d.y = dataFrame[yAxis.value];
+             scatter3d.z = dataFrame[zAxis.value];
+             Plotly.redraw(plot);
+           }}
+      
+           color_by_data.checked = false;
+           color_uniform.checked = true;
+           keys.sort();
+           [xAxis,yAxis,zAxis,color_data].forEach(
+             axis => keys.forEach(
+               key => {{
+                 var opt = document.createElement("option");
+                 opt.value = key;
+                 opt.text = key;
+                 axis.add(opt);
+               }}
+             )
+           );
+           color_data.value = keys[2];
+           xAxis.value = keys[0];
+           yAxis.value = keys[1];
+           zAxis.value = keys[keys.length-1];
+           update_plot(null);
+
+           color_by_data.addEventListener("click",  update_plot);
+           color_uniform.addEventListener("click",  update_plot);
+           [xAxis,yAxis,zAxis,color_data,color_value].forEach(
+             input => input.addEventListener("change",update_plot)
+           );
+         }}
+       );
+     }});
+}}
+</script>

@@ -1,0 +1,11 @@
+<div id="{div_id}" style="width: {width}; height: {height};" class="plotly-graph-div">
+</div>
+<script type="text/javascript">
+  window.PLOTLYENV=window.PLOTLYENV || {{}};
+  window.PLOTLYENV.BASE_URL="' + plotly_platform_url + '";
+  new JSZip()
+    .loadAsync( "{zdata}", {{"base64": true}} )
+    .then( zip => zip.file("/data.json").async("string") )
+    .then(JSON.parse)
+    .then( data => Plotly.newPlot("{div_id}", data, {jlayout}, {jconfig}) );
+</script>

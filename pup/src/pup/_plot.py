@@ -4,18 +4,24 @@ Created on Oct 2, 2016
 @author: Dirk Toewe
 '''
 import json, logging, os, uuid, webbrowser
+from tempfile import NamedTemporaryFile
 
 from pkg_resources import resource_string
 from plotly import tools
 from plotly.offline.offline import get_plotlyjs
 from plotly.utils import PlotlyJSONEncoder
-from tempfile import NamedTemporaryFile
+import io
+from zipfile import ZipFile, ZIP_DEFLATED
+import code
+from base64 import b64encode
 
 
-_plot_file_template = resource_string(__name__,"plot_file.template").decode('utf8')
-_plot_div_template  = resource_string(__name__,"plot_div.template" ).decode('utf8')
+_plot_file_template        = resource_string(__name__,"plot_file.template"       ).decode('utf8')
+_plot_div_template         = resource_string(__name__,"plot_div.template"        ).decode('utf8')
+_plot_div_zipped_template  = resource_string(__name__,"plot_div_zipped.template" ).decode('utf8')
+jszip_min_js = resource_string(__name__,'jszip.min.js').decode('utf8')
 
-def plot_html( figure_or_data, default_width='100%', default_height='100%', validate=True, config=None ):
+def plot_html( figure_or_data, default_width='100%', default_height='100%', config=None, zipped=True, validate=True ):
   '''
   Creates an HTML-div string visualizing the fiven Plotly figure.
 
@@ -62,11 +68,18 @@ def plot_html( figure_or_data, default_width='100%', default_height='100%', vali
   jlayout = json.dumps(figure.get('layout', {}), cls=PlotlyJSONEncoder)
   div_id = uuid.uuid4()
 
-  plotly_html_div = _plot_div_template.format( **locals() )
+  if zipped:
+    zdata = io.BytesIO()
+    with ZipFile(zdata,'w',compression=ZIP_DEFLATED) as zipFile:
+      zipFile.writestr('/data.json', jdata)
+    zdata = b64encode( zdata.getvalue() ).decode('utf-8')
+    div = _plot_div_zipped_template.format( **locals() )
+  else:
+    div = _plot_div_template.format( **locals() )
 
-  return plotly_html_div, div_id, width, height
+  return div, div_id, width, height
 
-def plot_file(figure_or_data, filename=None, auto_open=True, include_plotlyjs=True, validate=True, config=None ):
+def plot_file(figure_or_data, filename=None, auto_open=True, config=None, zipped=True, include_plotlyjs=True, validate=True ):
   '''
   Creates an HTML-file visualizing the fiven Plotly figure.
 
@@ -95,8 +108,10 @@ def plot_file(figure_or_data, filename=None, auto_open=True, include_plotlyjs=Tr
   elif not filename.endswith('.html'):
     logging.warn( 'Your filename "%s" doesn\'t end with .html.', filename)
 
-  plot_div, div_id, width, height = plot_html(figure_or_data, config=config, validate=validate )
+  plot_div, div_id, width, height = plot_html(figure_or_data, config=config, zipped=zipped, validate=validate )
   plotly_script = '' if not include_plotlyjs else '<script type="text/javascript">' + get_plotlyjs() + '</script>'
+  if zipped:
+    plotly_script += '<script type="text/javascript">' + jszip_min_js + '</script>'
   resize_script = '' if width != '100%' and height == '100%' else (
   '''
     <script type="text/javascript">
