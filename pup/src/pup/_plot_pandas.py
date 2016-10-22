@@ -1,3 +1,19 @@
+# Copyright 2016 Dirk Toewe
+#
+# This file is part of PUP.
+#
+# PUP is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# PUP is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with PUP. If not, see <http://www.gnu.org/licenses/>.
 '''
 Created on Oct 15, 2016
 
@@ -42,7 +58,8 @@ class _DataFrameJSONEncoder(JSONEncoder):
 _DataFrameJSONEncoder = _DataFrameJSONEncoder()
 
 def plot_DataFrame_html( dataFrame, layout={}, config=None, zipped=True, validate=True ):
-
+  '''
+  '''
   assert zipped
 
   if not isinstance(layout,go.Layout):
@@ -92,7 +109,8 @@ def plot_DataFrame_html( dataFrame, layout={}, config=None, zipped=True, validat
   return div, div_id, width, height
 
 def plot_DataFrame_file( dataFrame, layout={}, filename=None, auto_open=True, config=None, zipped=True, include_plotlyjs=True, validate=True ):
-
+  '''
+  '''
   if None is filename:
     with NamedTemporaryFile(prefix='tmp_plot_',suffix='.html',delete=False) as file:
       filename = file.name
@@ -123,3 +141,6 @@ def plot_DataFrame_file( dataFrame, layout={}, filename=None, auto_open=True, co
     webbrowser.open(url)
 
   return url
+
+  def iplot_DataFrame():
+    raise Exception('Not yet implemented!')
