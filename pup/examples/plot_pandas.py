@@ -23,10 +23,10 @@ Created on Oct 15, 2016
 from pandas import read_csv
 from pup._plot_pandas import plot_DataFrame_file
 
-dataFrame = read_csv('frankfurt_weather.csv', delimiter=';', skipinitialspace=True)
-del dataFrame['eor']
-
 def main():
+  # SOURCE: www.dwd.de (Deutscher Wetterdienst)
+  dataFrame = read_csv('frankfurt_weather.csv', delimiter=';', skipinitialspace=True)
+  del dataFrame['eor']
   plot_DataFrame_file(
     dataFrame,
     layout = {
