@@ -159,7 +159,7 @@
             row = new Array(columns.length+1),
             txt = new Array(index.length);
           index.forEach( (idx,iRow) => {{
-            row[0] = `DataFrame idx: ${{idx}}`;
+            row[0] = `DataFrame index: ${{idx}}`;
             columns.forEach( (col,iCol) =>
               row[iCol+1] = `${{col}}: ${{data[col][iRow]}}`
             );

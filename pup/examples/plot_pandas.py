@@ -21,19 +21,22 @@ Created on Oct 15, 2016
 '''
 
 from pandas import read_csv
-from pup._plot_pandas import plot_DataFrame_file
 
-def main():
+import pup
+
+
+def plot_DataFrame_file():
   # SOURCE: www.dwd.de (Deutscher Wetterdienst)
   dataFrame = read_csv('frankfurt_weather.csv', delimiter=';', skipinitialspace=True)
   del dataFrame['eor']
-  plot_DataFrame_file(
+  pup.plot_DataFrame_file(
     dataFrame,
     layout = {
-      'margin': dict( l=0, r=0, b=0, t=16, pad=0 ),
+      'title': 'Historical Weather Frankfurt (Source: www.dwd.de)',
+      'margin': dict( l=0, r=0, b=0, t=24, pad=0 ),
       'height': 800
     }
   )
 
 if '__main__' == __name__:
-  main()
+  plot_DataFrame_file()
