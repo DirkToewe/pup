@@ -1,0 +1,20 @@
+<div>
+  <a id="{aid}">Loading "{name}"...</a>
+  {jszip}
+  <script type="text/javascript">
+  {{
+    new JSZip()
+      .loadAsync( "{b64str}", {{"base64": true}} )
+      .then( zip => zip.file("{name}").async("blob") )
+      .then(
+         blob => {{
+           var a = document.getElementById("{aid}");
+           a = document.getElementById("{aid}");
+           a.href = URL.createObjectURL(blob);
+           a.download = "{name}"
+           a.innerHTML = "{text}"
+         }}
+       );
+  }}
+  </script>
+</div>

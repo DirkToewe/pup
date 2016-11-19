@@ -1,0 +1,19 @@
+<div>
+  <a id="{aid}">Loading "{name}"....</a>
+  <script type="text/javascript">
+  {{
+    var
+      b64 = atob('{b64str}'),
+      bytes = new Uint8Array(b64.length);
+    for ( var i = bytes.length-1; i >= 0; i-- ) {{
+      bytes[i] = b64.charCodeAt(i);
+    }}
+    var
+      blob = new Blob([bytes]),
+      a = document.getElementById("{aid}");
+    a.href = URL.createObjectURL(blob);
+    a.download = "{name}"
+    a.innerHTML = "{text}"
+  }}
+  </script>
+</div>

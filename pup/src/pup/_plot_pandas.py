@@ -35,7 +35,7 @@ import plotly.graph_objs as go
 
 _plot_DataFrame_div_template  = resource_string(__name__,"plot_DataFrame_div.template" ).decode('utf8')
 _plot_DataFrame_file_template = resource_string(__name__,"plot_DataFrame_file.template").decode('utf8')
-jszip_min_js = resource_string(__name__,'jszip.min.js').decode('utf8')
+_jszip_min_js = resource_string(__name__,'jszip.min.js').decode('utf8')
 
 class _DataFrameJSONEncoder(JSONEncoder):
  
@@ -108,7 +108,7 @@ def plot_DataFrame_html( dataFrame, layout={}, config=None, zipped=True, validat
 
   return div, div_id, width, height
 
-def plot_DataFrame_file( dataFrame, layout={}, filename=None, auto_open=True, config=None, zipped=True, include_plotlyjs=True, validate=True ):
+def plot_DataFrame_file( dataFrame, scatter3d={}, layout={}, filename=None, auto_open=True, config=None, zipped=True, include_plotlyjs=True, validate=True ):
   '''
   '''
   if None is filename:
@@ -120,7 +120,7 @@ def plot_DataFrame_file( dataFrame, layout={}, filename=None, auto_open=True, co
   plot_div, div_id, width, height = plot_DataFrame_html(dataFrame, layout, config=config, zipped=zipped, validate=validate )
   plotly_script = '' if not include_plotlyjs else '<script type="text/javascript">' + get_plotlyjs() + '</script>'
   if zipped:
-    plotly_script += '<script type="text/javascript">' + jszip_min_js + '</script>'
+    plotly_script += '<script type="text/javascript">' + _jszip_min_js + '</script>'
   resize_script = '' if width != '100%' and height == '100%' else (
   '''
     <script type="text/javascript">
