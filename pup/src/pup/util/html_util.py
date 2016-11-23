@@ -1,14 +1,32 @@
-'''
-Created on Nov 19, 2016
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-@author: dtitx
-'''
+# Copyright 2016 Dirk Toewe
+#
+# This file is part of PUP.
+#
+# PUP is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# PUP is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with PUP. If not, see <http://www.gnu.org/licenses/>.
+
 from base64 import b64encode
-from uuid import uuid4
-from pkg_resources import resource_string
-import pup
 import io
+from uuid import uuid4
 from zipfile import ZipFile, ZIP_DEFLATED
+
+from pkg_resources import resource_string
+
+import pup
+
 
 _html_embed_file     = resource_string(__name__,"html_embed_file.template" ).decode('utf8')
 _html_embed_file_zip = resource_string(__name__,"html_embed_file_zip.template").decode('utf8')
